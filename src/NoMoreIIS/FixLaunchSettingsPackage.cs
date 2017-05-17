@@ -8,6 +8,7 @@ using System;
 using System.Runtime.InteropServices;
 using EnvDTE;
 using Microsoft.VisualStudio.Shell;
+using NoMoreIIS.Services;
 
 namespace NoMoreIIS
 {
@@ -36,11 +37,11 @@ namespace NoMoreIIS
     {
         public const string PackageGuidString = "0937dc7e-2568-49c9-bb0f-00d3c3411a4c";
 
-        private FixLaunchSettingsService _service;
+        private CommandWatcher _service;
 
         public FixLaunchSettingsPackage()
         {
-            _service = new FixLaunchSettingsService();
+            _service = new CommandWatcher();
         }
 
         protected override void Initialize()

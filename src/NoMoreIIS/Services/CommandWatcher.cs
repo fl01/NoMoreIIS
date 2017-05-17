@@ -1,27 +1,35 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Windows.Forms;
 using EnvDTE;
 using EnvDTE80;
+using NoMoreIIS.Models;
 
-namespace NoMoreIIS
+namespace NoMoreIIS.Services
 {
-    internal sealed class FixLaunchSettingsService
+    internal sealed class CommandWatcher
     {
         [ContextStatic]
         private static CommandEvents _commandEvents;
 
         private DTE _dte;
+        private readonly IFileSystemService _fileSystemService;
+        private readonly IFixJsonLaunchSettingsService _fixJsonService;
+
         private HashSet<string> _commandsToProxy = new HashSet<string>()
         {
             "{5EFC7975-14BC-11CF-9B2B-00AA00573819}882", // build all
             "{5EFC7975-14BC-11CF-9B2B-00AA00573819}295", // start debugging
             "{5EFC7975-14BC-11CF-9B2B-00AA00573819}368" // start without debugging
         };
+
+        public CommandWatcher(IFileSystemService fileSystemService = null, IFixJsonLaunchSettingsService fixJsonService = null)
+        {
+            _fileSystemService = fileSystemService ?? new FileSystemService();
+            _fixJsonService = fixJsonService ?? new FixJsonLaunchSettingsService();
+        }
 
         public void Initialize(DTE dte)
         {
@@ -40,37 +48,24 @@ namespace NoMoreIIS
 
         private bool IsNeedToFixLaunchSettings(string commandId, int id)
         {
-            Debug.WriteLine($"CommandID={commandId} Id={id}");
             return _commandsToProxy.Contains($"{commandId}{id}");
         }
 
         private void FixLaunchSettings()
         {
-            IEnumerable<string> filesToFix = GetLaunchSettingsFiles();
+            IList<LaunchSettingsMetadata> metadata = GetLaunchSettingsMetadata();
 
-            //MessageBox.Show("FIXING");
+            _fixJsonService.Fix(metadata);
         }
 
-        private IList<string> GetLaunchSettingsFiles()
+        private IList<LaunchSettingsMetadata> GetLaunchSettingsMetadata()
         {
-            IEnumerable<Project> projects = GetSolutionProjects();
-            var result = new List<string>();
-
-            foreach (var project in projects)
-            {
-                if (string.Equals(project.Kind, Definitions.SolutionProjects.NetCoreProject, StringComparison.OrdinalIgnoreCase))
-                {
-                    string expectedLaunchSettingsFile = string.Join(Path.DirectorySeparatorChar.ToString(), Directory.GetParent(project.FullName), Definitions.LaunchSettingsPath);
-
-                    if (File.Exists(expectedLaunchSettingsFile))
-                    {
-                        Debug.WriteLine($"I'm DOT NET CORE PROJECT WITH LAUNCH SETTINGS: {project.FullName}{Environment.NewLine}{expectedLaunchSettingsFile}");
-                        result.Add(expectedLaunchSettingsFile);
-                    }
-                }
-            }
-
-            return result;
+            return (from project in GetSolutionProjects()
+                    where string.Equals(project.Kind, Definitions.SolutionProjects.NetCoreProjectKind, StringComparison.OrdinalIgnoreCase)
+                    let expectedLaunchSettingsFile = string.Join(Path.DirectorySeparatorChar.ToString(), Directory.GetParent(project.FullName), Definitions.LaunchSettingsPath)
+                    where _fileSystemService.FileExists(expectedLaunchSettingsFile)
+                    select new LaunchSettingsMetadata(project.Name, expectedLaunchSettingsFile))
+                    .ToList();
         }
 
         private IEnumerable<Project> GetSolutionProjects()
@@ -103,7 +98,7 @@ namespace NoMoreIIS
         {
             var result = new List<Project>();
 
-            for (var i = 1; i <= solutionFolder.ProjectItems.Count; i++)
+            for (int i = 1; i <= solutionFolder.ProjectItems.Count; i++)
             {
                 var subProject = solutionFolder.ProjectItems.Item(i).SubProject;
                 if (subProject == null)
