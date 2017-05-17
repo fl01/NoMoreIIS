@@ -121,6 +121,6 @@
     <value>NoMoreIIS Extension</value>
   </data>
   <data name="112" xml:space="preserve">
-    <value>NoMoreIIS Visual Studio Extension Detailed Info</value>
+    <value>It is time to say NO, I DON'T NEED YOUR IIS LAUNCH SETTINGS PROFILE for Asp.net Core projects</value>
   </data>
 </root>

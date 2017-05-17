@@ -1,10 +1,4 @@
-﻿//------------------------------------------------------------------------------
-// <copyright file="FixLaunchSettingsCommandPackage.cs" company="Company">
-//     Copyright (c) Company.  All rights reserved.
-// </copyright>
-//------------------------------------------------------------------------------
-
-using System;
+﻿using System;
 using System.Runtime.InteropServices;
 using EnvDTE;
 using Microsoft.VisualStudio.Shell;
