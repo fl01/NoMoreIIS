@@ -5,6 +5,6 @@ namespace NoMoreIIS.Services
 {
     public interface IFixJsonLaunchSettingsService
     {
-        void Fix(IEnumerable<LaunchSettingsMetadata> filesToFix);
+        void Fix(IEnumerable<LaunchSettingsMetadata> metadata);
     }
 }

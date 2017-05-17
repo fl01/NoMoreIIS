@@ -62,7 +62,7 @@ namespace NoMoreIIS.Services
         {
             return (from project in GetSolutionProjects()
                     where string.Equals(project.Kind, Definitions.SolutionProjects.NetCoreProjectKind, StringComparison.OrdinalIgnoreCase)
-                    let expectedLaunchSettingsFile = string.Join(Path.DirectorySeparatorChar.ToString(), Directory.GetParent(project.FullName), Definitions.LaunchSettingsPath)
+                    let expectedLaunchSettingsFile = string.Join(Path.DirectorySeparatorChar.ToString(), Directory.GetParent(project.FullName), Definitions.LaunchSettingsFile.Path)
                     where _fileSystemService.FileExists(expectedLaunchSettingsFile)
                     select new LaunchSettingsMetadata(project.Name, expectedLaunchSettingsFile))
                     .ToList();
