@@ -61,7 +61,7 @@ namespace NoMoreIIS.Services
         private IList<LaunchSettingsMetadata> GetLaunchSettingsMetadata()
         {
             return (from project in GetSolutionProjects()
-                    where string.Equals(project.Kind, Definitions.SolutionProjects.NetCoreProjectKind, StringComparison.OrdinalIgnoreCase)
+                    where Definitions.SolutionProjects.NetCoreProjectKinds.Any(f => string.Equals(project.Kind, f, StringComparison.OrdinalIgnoreCase))
                     let expectedLaunchSettingsFile = string.Join(Path.DirectorySeparatorChar.ToString(), Directory.GetParent(project.FullName), Definitions.LaunchSettingsFile.Path)
                     where _fileSystemService.FileExists(expectedLaunchSettingsFile)
                     select new LaunchSettingsMetadata(project.Name, expectedLaunchSettingsFile))
